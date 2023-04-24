@@ -33,21 +33,7 @@ module.exports =
 		/**
 		 * Creates a new instance of the WelcomeCard class.
 		 */
-		canvas = Canvas.createCanvas();
-		constructor() {
-			// Loads the background image and draws it on the canvas
-			Canvas.loadImage("./img/bg.png").then((image) => {
-				const context = this.canvas.getContext("2d");
-				context.font = "72px sans-serif";
-				context.fillStyle = "#ffffff";
-				context.drawImage(image, 0, 0, 1024, 500);
-				context.fillText("Welcome", 360, 360);
-				context.beginPath();
-				context.arc(512, 166, 128, 0, Math.PI * 2, true);
-				context.stroke();
-				context.fill();
-			});
-		}
+		canvas = Canvas.createCanvas(1024, 500);
 		/**
 		 * Sets the tag for the WelcomeCard.
 		 * @param {string} tag - The tag to set.
@@ -98,12 +84,25 @@ module.exports =
 		 * @returns {Promise<AttachmentBuilder>} A Promise containing an AttachmentBuilder with the WelcomeCard image.
 		 */
 		async draw() {
+			// Loads the background image and draws it on the canvas
+			await Canvas.loadImage("./img/bg.png").then((image) => {
+				const context = this.canvas.getContext("2d");
+				context.font = "72px sans-serif";
+				context.fillStyle = "#ffffff";
+				context.drawImage(image, 0, 0, 1024, 500);
+				context.fillText("Welcome", 360, 360);
+				context.beginPath();
+				context.arc(512, 166, 128, 0, Math.PI * 2, true);
+				context.closePath();
+				context.stroke();
+				context.fill();
+			});
 			const context = this.canvas.getContext("2d");
 			context.font = "42px sans-serif";
 			context.textAlign = "center";
 			context.fillText(this.tag, 512, 410);
 			context.font = "32px sans-serif";
-			context.fillText(`You are our ${this.memberCount}${getNumberSuffix(this.memberCount)} member`);
+			context.fillText(`You are our ${getNumberSuffix(this.memberCount)} member`, 512, 455);
 			context.beginPath();
 			context.arc(512, 166, 119, 0, Math.PI * 2, true);
 			context.closePath();
