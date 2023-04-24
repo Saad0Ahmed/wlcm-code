@@ -84,10 +84,15 @@ module.exports =
 		 * @returns {Promise<AttachmentBuilder>} A Promise containing an AttachmentBuilder with the WelcomeCard image.
 		 */
 		async draw() {
+			Canvas.registerFont("./Algerian Regular.ttf", {
+				family: "Algerian",
+				weight: "Regular",
+				style: "Regular"
+			});
 			// Loads the background image and draws it on the canvas
 			await Canvas.loadImage("./img/bg.png").then((image) => {
 				const context = this.canvas.getContext("2d");
-				context.font = "72px sans-serif";
+				context.font = "72px  Algerian";
 				context.fillStyle = "#ffffff";
 				context.drawImage(image, 0, 0, 1024, 500);
 				context.fillText("Welcome", 360, 360);
@@ -98,10 +103,10 @@ module.exports =
 				context.fill();
 			});
 			const context = this.canvas.getContext("2d");
-			context.font = "42px sans-serif";
+			context.font = "42px  Algerian";
 			context.textAlign = "center";
 			context.fillText(this.tag, 512, 410);
-			context.font = "32px sans-serif";
+			context.font = "32px  Algerian";
 			context.fillText(`You are our ${getNumberSuffix(this.memberCount)} member`, 512, 455);
 			context.beginPath();
 			context.arc(512, 166, 119, 0, Math.PI * 2, true);
