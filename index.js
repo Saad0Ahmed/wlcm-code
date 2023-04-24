@@ -1,7 +1,15 @@
-const Canvas = require("canvas");
-const { Client, GatewayIntentBits, AttachmentBuilder, EmbedBuilder } = require("discord.js");
-const fs = require("fs");
+/**
+ * Discord bot that sends a welcome message with an image when a new member joins a server
+ * @module index
+ */
 
+const { Client, GatewayIntentBits } = require("discord.js");
+const WelcomeCard = require("./WelcomeCard");
+
+/**
+ * The Discord client used to listen to events and interact with the Discord API
+ * @type {Client}
+ */
 const client = new Client({
 	intents: [
 		GatewayIntentBits.DirectMessages,
@@ -14,62 +22,66 @@ const client = new Client({
 	]
 });
 
-var welcomeCanvas = {};
-welcomeCanvas.create = Canvas.createCanvas(1024, 500);
-welcomeCanvas.context = welcomeCanvas.create.getContext("2d");
-welcomeCanvas.context.font = "72px sans-serif";
-welcomeCanvas.context.fillStyle = "#ffffff";
-
-Canvas.loadImage("./img/bg.png").then(async (img) => {
-	welcomeCanvas.context.drawImage(img, 0, 0, 1024, 500);
-	welcomeCanvas.context.fillText("Welcome", 360, 360);
-	welcomeCanvas.context.beginPath();
-	welcomeCanvas.context.arc(512, 166, 128, 0, Math.PI * 2, true);
-	welcomeCanvas.context.stroke();
-	welcomeCanvas.context.fill();
-});
-
+/**
+ * Listen for the guildMemberAdd event and send a welcome message with an image
+ * @param {GuildMember} member - The member who joined the server
+ * @return {Promise<void>}
+ */
 client.on("guildMemberAdd", async (member) => {
-	await member.user.fetch(true);
 	if (member.user.bot) return;
+
+	// Get the welcome channel and check if it's a text channel
 	const welcomeChannel = member.guild.channels.cache.get("1099912133413720205");
 	if (!welcomeChannel || !welcomeChannel.isTextBased()) return;
-	let canvas = welcomeCanvas;
-	canvas.context.font = "42px sans-serif";
-	canvas.context.textAlign = "center";
-	canvas.context.fillText(member.user.tag.toUpperCase(), 512, 410);
-	canvas.context.font = "32px sans-serif";
-	canvas.context.fillText(`You are our ${member.guild.memberCount}th member`, 512, 455);
-	canvas.context.beginPath();
-	canvas.context.arc(512, 166, 119, 0, Math.PI * 2, true);
-	canvas.context.closePath();
-	canvas.context.clip();
-	await Canvas.loadImage(member.user.avatarURL({ extension: "png", size: 1024 })).then((img) => {
-		canvas.context.drawImage(img, 393, 47, 238, 238);
-	});
-	// write the buffer to a file
-	// make a new discord attachment
-	const attachment = new AttachmentBuilder(canvas.create.toBuffer(), "bg.png");
+
+	// Create a new WelcomeCard and set its properties
+	const welcomeCard = new WelcomeCard();
+	welcomeCard
+		.setAvatarUrl(member.user.avatarURL({ extension: "png", size: 1024 }))
+		.setMemberCount(member.guild.memberCount)
+		.setTag(member.user.tag);
+
+	// Draw the welcome image and create a new Discord attachment from the buffer
+	const attachment = await welcomeCard.draw();
+
 	try {
+		// Send the welcome message with the image attachment
 		welcomeChannel.send({ content: `:wave: Hello ${member}, Welcome to ${member.guild.name}`, files: [attachment] });
 	} catch (error) {
 		console.error(error);
 	}
 });
 
+/**
+ * Listen for the ready event and log in the console when the bot is ready
+ * @return {void}
+ */
 client.on("ready", () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 });
 
+/**
+ * Listen for the messageCreate event and handle commands
+ * @param {Message} message - The message received by the bot
+ * @return {Promise<void>}
+ */
 client.on("messageCreate", async (message) => {
 	if (message.author.bot) return;
+
+	// Set the bot's command prefix
 	const prefix = "!";
+
+	// Check if the message starts with the prefix and is not a mention of the bot
 	if (!message.content.startsWith(prefix) || message.mentions.members?.has(client.user.id)) return;
 
+	// Split the message into the command and its arguments
 	const [command, ...args] = message.content.replace(prefix, "").split(/ /);
+
+	// Handle the "@mention" command
 	if (command === "<@1099623542997389472>") {
 		message.reply("Hey!");
 	}
 });
 
-client.login("");
+// Log in to the Discord API using the bot token
+client.login("token here");
